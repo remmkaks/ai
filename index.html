@@ -21,7 +21,7 @@
       background: white;
     }
     th, td {
-      padding: 12px 15px;
+      padding: 10px 12px;
       text-align: left;
       border-bottom: 1px solid #eee;
     }
@@ -30,13 +30,11 @@
       color: white;
       text-transform: uppercase;
       font-size: 13px;
-      letter-spacing: 0.5px;
     }
     tr:hover {
       background-color: #f1f6fd;
     }
     .badge {
-      display: inline-block;
       padding: 3px 8px;
       border-radius: 12px;
       font-size: 12px;
@@ -57,82 +55,83 @@
   </style>
 </head>
 <body>
-  
-  <input class="search" placeholder="Otsi linke või kirjeldusi..." />
+
+<div id="linkList">
+  <input class="search" placeholder="Otsi linki, tüüpi, valdkonda või kirjeldust..." />
 
   <select id="importanceFilter">
     <option value="">Kõik olulisused</option>
-    <option value="High">High</option>
-    <option value="Medium">Medium</option>
-    <option value="Light">Light</option>
+    <option>High</option>
+    <option>Medium</option>
+    <option>Light</option>
   </select>
 
-  <div id="links">
-    <table>
-      <thead>
-        <tr>
-          <th>Jk</th>
-          <th>Link</th>
-          <th>Tüüp</th>
-          <th>Kirjeldus</th>
-          <th>Valdkond</th>
-          <th>Olulisus</th>
-        </tr>
-      </thead>
-      <tbody class="list">
-        <tr><td colspan="6">Laadin...</td></tr>
-      </tbody>
-    </table>
-  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>Jk</th>
+        <th>Link</th>
+        <th>Tüüp</th>
+        <th>Kirjeldus</th>
+        <th>Valdkond</th>
+        <th>Olulisus</th>
+      </tr>
+    </thead>
+    <tbody class="list">
+      <tr><td colspan="6">Laadin...</td></tr>
+    </tbody>
+  </table>
+</div>
 
-  <script>
-    async function fetchCSV() {
-      const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQNo7nXc6z6G43Wk0lwJ12z4uj0SPRdv467Nks8vO3UbHdmfVlnx1_xaIgLUc6kbWyzCE8H8pOm-6_7/pub?output=csv';
-      const response = await fetch(csvUrl);
-      const data = await response.text();
-      const rows = data.split("\n").slice(1);
-      return rows.map(row => {
-        const [jk, link, tyyp, kirjeldus, valdkond, olulisus] = row.split(",");
-        return { jk, link, tyyp, kirjeldus, valdkond, olulisus };
-      }).filter(link => link.jk && link.link);
-    }
+<script>
+  async function fetchCSV() {
+    const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQNo7nXc6z6G43Wk0lwJ12z4uj0SPRdv467Nks8vO3UbHdmfVlnx1_xaIgLUc6kbWyzCE8H8pOm-6_7/pub?output=csv';
+    const response = await fetch(csvUrl);
+    const data = await response.text();
+    const rows = data.split("\n").slice(1);
+    return rows.map(row => {
+      const [jk, link, tyyp, kirjeldus, valdkond, olulisus] = row.split(",");
+      return { jk, link, tyyp, kirjeldus, valdkond, olulisus };
+    }).filter(link => link.jk && link.link);
+  }
 
-    async function initList() {
-      const links = await fetchCSV();
-      const tbody = document.querySelector('.list');
-      tbody.innerHTML = '';
+  async function initList() {
+    const links = await fetchCSV();
+    const tbody = document.querySelector('.list');
+    tbody.innerHTML = '';
 
-      links.forEach(link => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td class="jk">${link.jk.trim()}</td>
-          <td class="link"><a href="${link.link.trim()}" target="_blank">${link.link.trim()}</a></td>
-          <td class="tyyp">${link.tyyp ? link.tyyp.trim() : ''}</td>
-          <td class="kirjeldus">${link.kirjeldus ? link.kirjeldus.trim() : ''}</td>
-          <td class="valdkond">${link.valdkond ? link.valdkond.trim() : ''}</td>
-          <td class="olulisus"><span class="badge ${link.olulisus ? link.olulisus.trim() : 'Light'}">
-            ${link.olulisus ? link.olulisus.trim() : 'Light'}
-          </span></td>
-        `;
-        tbody.appendChild(tr);
+    links.forEach(link => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="jk">${link.jk.trim()}</td>
+        <td class="link"><a href="${link.link.trim()}" target="_blank">${link.link.trim()}</a></td>
+        <td class="tyyp">${link.tyyp.trim()}</td>
+        <td class="kirjeldus">${link.kirjeldus.trim()}</td>
+        <td class="valdkond">${link.valdkond.trim()}</td>
+        <td class="olulisus">
+          <span class="badge ${link.olulisus.trim()}">${link.olulisus.trim()}</span>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    const options = {
+      valueNames: ['jk', 'link', 'tyyp', 'kirjeldus', 'valdkond', 'olulisus']
+    };
+
+    const linkList = new List('linkList', options);
+
+    document.getElementById('importanceFilter').addEventListener('change', function() {
+      const importance = this.value;
+      linkList.filter(item => {
+        if (!importance) return true;
+        return item.values().olulisus === importance;
       });
+    });
+  }
 
-      const options = {
-        valueNames: ['jk', 'link', 'tyyp', 'kirjeldus', 'valdkond', { name: 'olulisus', attr: 'data-importance' }]
-      };
+  initList();
+</script>
 
-      const linkList = new List('links', options);
-
-      document.getElementById('importanceFilter').addEventListener('change', function() {
-        const importance = this.value;
-        linkList.filter(item => {
-          if (importance === "") return true;
-          return item.values().olulisus.includes(importance);
-        });
-      });
-    }
-
-    initList();
-  </script>
 </body>
 </html>
