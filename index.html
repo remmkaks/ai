@@ -5,107 +5,52 @@
   <title>Linkide kataloog</title>
   <script src="https://cdn.jsdelivr.net/npm/list.js@2.3.1/dist/list.min.js"></script>
   <style>
-body {
-  font-family: 'Segoe UI', Arial, sans-serif;
-  margin: 0;
-  padding: 15px;
-  background-color: #f7f9fc;
-  color: #333;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  border-radius: 6px;
-  overflow: hidden;
-  background: white;
-}
-
-th, td {
-  padding: 10px;
-  text-align: left;
-  border-bottom: 1px solid #eee;
-  word-wrap: break-word;
-}
-
-th {
-  background-color: #2b3e50;
-  color: white;
-  text-transform: uppercase;
-  font-size: 12px;
-}
-
-tr:hover {
-  background-color: #f1f6fd;
-}
-
-.badge {
-  padding: 3px 8px;
-  border-radius: 12px;
-  font-size: 12px;
-  color: white;
-  font-weight: bold;
-}
-
-.High { background-color: #e74c3c; }
-.Medium { background-color: #f39c12; }
-.Light { background-color: #27ae60; }
-
-.search, select {
-  padding: 8px;
-  margin-bottom: 10px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-/* Mobiilivaade */
-@media only screen and (max-width: 700px) {
-  table, thead, tbody, th, td, tr {
-    display: block;
-  }
-
-  thead tr {
-    display: none;
-  }
-
-  tr {
-    margin-bottom: 15px;
-    border-radius: 8px;
-    border: 1px solid #ddd;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  }
-
-  td {
-    position: relative;
-    padding-left: 40%;
-    text-align: left;
-    border-bottom: 1px solid #eee;
-  }
-
-  td::before {
-    content: attr(data-label);
-    position: absolute;
-    left: 10px;
-    width: 35%;
-    padding-right: 10px;
-    font-weight: bold;
-    color: #555;
-  }
-
-  td:last-child {
-    border-bottom: none;
-  }
-}
-</style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      margin: 0;
+      padding: 10px;
+      background-color: #f7f9fc;
+    }
+    .search, select {
+      padding: 8px;
+      margin-bottom: 12px;
+      border-radius: 5px;
+      border: 1px solid #ddd;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .list { display: flex; flex-wrap: wrap; gap: 12px; }
+    .card {
+      flex: 1 1 300px;
+      background-color: #fff;
+      border-radius: 6px;
+      padding: 10px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      box-sizing: border-box;
+    }
+    .card-header {
+      font-size: 16px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .card-desc { font-size: 13px; margin-bottom: 5px; }
+    .badge {
+      padding: 3px 8px;
+      border-radius: 10px;
+      font-size: 12px;
+      color: #fff;
+      display: inline-block;
+    }
+    .High { background-color: #e74c3c; }
+    .Medium { background-color: #f39c12; }
+    .Light { background-color: #27ae60; }
+    a { text-decoration: none; color: #0066cc; word-break: break-all; }
+  </style>
 </head>
 <body>
 
 <div id="linkList">
-  <input class="search" placeholder="Otsi linki, tüüpi, valdkonda või kirjeldust..." />
-
+  <input class="search" placeholder="Otsi..." />
   <select id="importanceFilter">
     <option value="">Kõik olulisused</option>
     <option>High</option>
@@ -113,70 +58,55 @@ tr:hover {
     <option>Light</option>
   </select>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Jk</th>
-        <th>Link</th>
-        <th>Tüüp</th>
-        <th>Kirjeldus</th>
-        <th>Valdkond</th>
-        <th>Olulisus</th>
-      </tr>
-    </thead>
-    <tbody class="list">
-      <tr><td colspan="6">Laadin...</td></tr>
-    </tbody>
-  </table>
+  <div class="list">Laadin linke...</div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/list.js@2.3.1/dist/list.min.js"></script>
 <script>
-  async function fetchCSV() {
-    const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQNo7nXc6z6G43Wk0lwJ12z4uj0SPRdv467Nks8vO3UbHdmfVlnx1_xaIgLUc6kbWyzCE8H8pOm-6_7/pub?output=csv';
-    const response = await fetch(csvUrl);
-    const data = await response.text();
-    const rows = data.split("\n").slice(1);
-    return rows.map(row => {
-      const [jk, link, tyyp, kirjeldus, valdkond, olulisus] = row.split(",");
-      return { jk, link, tyyp, kirjeldus, valdkond, olulisus };
-    }).filter(link => link.jk && link.link);
-  }
+async function fetchCSV() {
+  const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQNo7nXc6z6G43Wk0lwJ12z4uj0SPRdv467Nks8vO3UbHdmfVlnx1_xaIgLUc6kbWyzCE8H8pOm-6_7/pub?output=csv';
+  const response = await fetch(csvUrl);
+  const data = await response.text();
+  const rows = data.split("\n").slice(1);
+  return rows.map(row => {
+    const [jk, link, tyyp, kirjeldus, valdkond, olulisus] = row.split(",");
+    return { jk, link, tyyp, kirjeldus, valdkond, olulisus };
+  }).filter(link => link.jk && link.link);
+}
 
-  async function initList() {
-    const links = await fetchCSV();
-    const tbody = document.querySelector('.list');
-    tbody.innerHTML = '';
+async function initList() {
+  const links = await fetchCSV();
+  const container = document.querySelector('#linkList .list');
+  container.innerHTML = '';
 
-    links.forEach(link => {
-  const tr = document.createElement('tr');
-  tr.innerHTML = `
-    <td class="jk" data-label="Jk">${link.jk.trim()}</td>
-    <td class="link" data-label="Link"><a href="${link.link.trim()}" target="_blank">${link.link.trim()}</a></td>
-    <td class="tyyp" data-label="Tüüp">${link.tyyp.trim()}</td>
-    <td class="kirjeldus" data-label="Kirjeldus">${link.kirjeldus.trim()}</td>
-    <td class="valdkond" data-label="Valdkond">${link.valdkond.trim()}</td>
-    <td class="olulisus" data-label="Olulisus">
+  links.forEach(link => {
+    const div = document.createElement('div');
+    div.className = 'card';
+    div.innerHTML = `
+      <div class="card-header"><a href="${link.link.trim()}" target="_blank">${link.link.trim()}</a></div>
+      <div class="card-desc">${link.kirjeldus ? link.kirjeldus.trim() : ''}</div>
+      <div><strong>Tüüp:</strong> ${link.tyyp ? link.tyyp.trim() : ''}</div>
+      <div class="card-desc">Valdkond: ${link.valdkond ? link.valdkond.trim() : ''}</div>
       <span class="badge ${link.olulisus.trim()}">${link.olulisus.trim()}</span>
-    </td>
-  `;
-  tbody.appendChild(tr);
-});
-    const options = {
-      valueNames: ['jk', 'link', 'tyyp', 'kirjeldus', 'valdkond', 'olulisus']
-    };
+    `;
+    document.querySelector('.list').appendChild(div);
+  });
 
-    const linkList = new List('linkList', options);
+  const options = {
+    valueNames: ['card-header', 'card-desc', 'badge']
+  };
 
-    document.getElementById('importanceFilter').addEventListener('change', function() {
-      const importance = this.value;
-      linkList.filter(item => {
-        if (!importance) return true;
-        return item.values().olulisus === importance;
-      });
+  const linkList = new List('linkList', options);
+
+  document.getElementById('importanceFilter')?.addEventListener('change', function() {
+    const importance = this.value;
+    linkList.filter(item => {
+      return importance === "" || item.elm.querySelector('.badge').textContent == importance;
     });
-  }
+  });
+}
 
-  initList();
+fetchCSV();
 </script>
 
 </body>
