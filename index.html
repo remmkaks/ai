@@ -6,45 +6,53 @@
   <script src="https://cdn.jsdelivr.net/npm/list.js@2.3.1/dist/list.min.js"></script>
   <style>
     body {
-      font-family: 'Segoe UI', Arial, sans-serif;
+      font-family: Arial, sans-serif;
       margin: 0;
-      padding: 10px;
-      background-color: #f7f9fc;
+      padding: 15px;
+      background-color: transparent;
     }
     .search, select {
+      width: 100%;
       padding: 8px;
       margin-bottom: 12px;
+      box-sizing: border-box;
       border-radius: 5px;
-      border: 1px solid #ddd;
+      border: 1px solid #ccc;
+    }
+    .list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 6px;
+      padding: 10px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
       width: 100%;
       box-sizing: border-box;
     }
-    .list { display: flex; flex-wrap: wrap; gap: 12px; }
-    .card {
-      flex: 1 1 300px;
-      background-color: #fff;
-      border-radius: 6px;
-      padding: 10px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      box-sizing: border-box;
-    }
-    .card-header {
-      font-size: 16px;
+    .card a {
       font-weight: bold;
-      margin-bottom: 5px;
+      color: #007bff;
+      text-decoration: none;
+      word-break: break-all;
     }
-    .card-desc { font-size: 13px; margin-bottom: 5px; }
     .badge {
       padding: 3px 8px;
-      border-radius: 10px;
+      border-radius: 12px;
       font-size: 12px;
-      color: #fff;
-      display: inline-block;
+      color: white;
+      font-weight: bold;
     }
     .High { background-color: #e74c3c; }
     .Medium { background-color: #f39c12; }
     .Light { background-color: #27ae60; }
-    a { text-decoration: none; color: #0066cc; word-break: break-all; }
+    .label {
+      font-size: 12px;
+      color: #888;
+      margin-top: 3px;
+    }
   </style>
 </head>
 <body>
@@ -58,10 +66,9 @@
     <option>Light</option>
   </select>
 
-  <div class="list">Laadin linke...</div>
+  <div class="list">Laadin...</div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/list.js@2.3.1/dist/list.min.js"></script>
 <script>
 async function fetchCSV() {
   const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQNo7nXc6z6G43Wk0lwJ12z4uj0SPRdv467Nks8vO3UbHdmfVlnx1_xaIgLUc6kbWyzCE8H8pOm-6_7/pub?output=csv';
@@ -71,37 +78,39 @@ async function fetchCSV() {
   return rows.map(row => {
     const [jk, link, tyyp, kirjeldus, valdkond, olulisus] = row.split(",");
     return { jk, link, tyyp, kirjeldus, valdkond, olulisus };
-  }).filter(link => link.jk && link.link);
+  }).filter(item => item.jk && item.link);
 }
 
 async function initList() {
   const links = await fetchCSV();
-  const container = document.querySelector('#linkList .list');
+  const container = document.querySelector('.list');
   container.innerHTML = '';
 
   links.forEach(link => {
-    const div = document.createElement('div');
-    div.className = 'card';
-    div.innerHTML = `
-      <div class="card-header"><a href="${link.link.trim()}" target="_blank">${link.link.trim()}</a></div>
-      <div class="card-desc">${link.kirjeldus ? link.kirjeldus.trim() : ''}</div>
-      <div><strong>Tüüp:</strong> ${link.tyyp ? link.tyyp.trim() : ''}</div>
-      <div class="card-desc">Valdkond: ${link.valdkond ? link.valdkond.trim() : ''}</div>
-      <span class="badge ${link.olulisus.trim()}">${link.olulisus.trim()}</span>
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <div class="jk"><strong>#${link.jk.trim()}</strong></div>
+      <div class="link"><a href="${link.link.trim()}" target="_blank">${link.link.trim()}</a></div>
+      <div class="tyyp"><strong>Tüüp:</strong> ${link.tyyp.trim()}</div>
+      <div class="kirjeldus">${link.kirjeldus.trim()}</div>
+      <div class="valdkond"><em>${link.valdkond.trim()}</em></div>
+      <div class="olulisus"><span class="badge ${link.olulisus.trim()}">${link.olulisus.trim()}</span></div>
     `;
-    document.querySelector('.list').appendChild(div);
+    container.appendChild(card);
   });
 
   const options = {
-    valueNames: ['card-header', 'card-desc', 'badge']
+    valueNames: ['jk', 'kirjeldus', 'valdkond', 'tyyp', 'olulisus', { name: 'link', attr: 'href' }]
   };
 
   const linkList = new List('linkList', options);
 
-  document.getElementById('importanceFilter')?.addEventListener('change', function() {
+  document.getElementById('importanceFilter').addEventListener('change', function() {
     const importance = this.value;
     linkList.filter(item => {
-      return importance === "" || item.elm.querySelector('.badge').textContent == importance;
+      if (importance === "") return true;
+      return item.values().olulisus === importance;
     });
   });
 }
