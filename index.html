@@ -8,50 +8,49 @@
     body {
       font-family: Arial, sans-serif;
       margin: 0;
-      padding: 15px;
+      padding: 10px;
       background-color: transparent;
     }
     .search, select {
       width: 100%;
       padding: 8px;
-      margin-bottom: 12px;
-      box-sizing: border-box;
+      margin-bottom: 10px;
+      border: 1px solid #ddd;
       border-radius: 5px;
-      border: 1px solid #ccc;
+      box-sizing: border-box;
     }
     .list {
       display: flex;
-      flex-wrap: wrap;
+      flex-direction: column;
       gap: 10px;
     }
     .card {
-      background: #fff;
-      border-radius: 6px;
+      border: 1px solid #ddd;
       padding: 10px;
+      border-radius: 5px;
+      background: #fff;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-      width: 100%;
-      box-sizing: border-box;
-    }
-    .card a {
-      font-weight: bold;
-      color: #007bff;
-      text-decoration: none;
-      word-break: break-all;
     }
     .badge {
-      padding: 3px 8px;
+      padding: 2px 6px;
       border-radius: 12px;
-      font-size: 12px;
       color: white;
-      font-weight: bold;
+      font-size: 12px;
     }
     .High { background-color: #e74c3c; }
     .Medium { background-color: #f39c12; }
     .Light { background-color: #27ae60; }
-    .label {
-      font-size: 12px;
-      color: #888;
-      margin-top: 3px;
+    .search, select {
+      padding: 8px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      margin-bottom:10px;
+      box-sizing: border-box;
+      width:100%;
+    }
+    a {
+      color: #007bff;
+      word-break: break-all;
     }
   </style>
 </head>
@@ -66,7 +65,7 @@
     <option>Light</option>
   </select>
 
-  <div class="list">Laadin...</div>
+  <div class="list">Laadin andmeid...</div>
 </div>
 
 <script>
@@ -87,35 +86,32 @@ async function initList() {
   container.innerHTML = '';
 
   links.forEach(link => {
-    const card = document.createElement('div');
-    card.className = 'card';
-    card.innerHTML = `
-      <div class="jk"><strong>#${link.jk.trim()}</strong></div>
-      <div class="link"><a href="${link.link.trim()}" target="_blank">${link.link.trim()}</a></div>
-      <div class="tyyp"><strong>Tüüp:</strong> ${link.tyyp.trim()}</div>
-      <div class="kirjeldus">${link.kirjeldus.trim()}</div>
-      <div class="valdkond"><em>${link.valdkond.trim()}</em></div>
-      <div class="olulisus"><span class="badge ${link.olulisus.trim()}">${link.olulisus.trim()}</span></div>
+    const div = document.createElement('div');
+    div.className = 'card';
+    div.innerHTML = `
+      <div><strong>#${link.jk.trim()}</strong></div>
+      <div><a href="${link.link.trim()}" target="_blank">${link.link.trim()}</a></div>
+      <div><strong>Tüüp:</strong> ${link.tyyp.trim()}</div>
+      <div class="desc">${link.kirjeldus.trim()}</div>
+      <div class="valdkond">${link.valdkond.trim()}</div>
+      <span class="badge ${link.olulisus.trim()}">${link.olulisus.trim()}</span>
     `;
-    container.appendChild(card);
+    container.appendChild(div);
   });
 
   const options = {
-    valueNames: ['jk', 'kirjeldus', 'valdkond', 'tyyp', 'olulisus', { name: 'link', attr: 'href' }]
+    valueNames: ['card', 'valdkond', 'badge', 'valdkond', 'card-desc', { data: ['olulisus'] }]
   };
 
   const linkList = new List('linkList', options);
 
   document.getElementById('importanceFilter').addEventListener('change', function() {
-    const importance = this.value;
-    linkList.filter(item => {
-      if (importance === "") return true;
-      return item.values().olulisus === importance;
-    });
+    const imp = this.value;
+    linkList.filter(item => imp === "" || item.values().olulisus === imp);
   });
 }
 
-fetchCSV();
+initList();
 </script>
 
 </body>
