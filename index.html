@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Linkide kataloog</title>
+  <script src="https://cdn.jsdelivr.net/npm/list.js@2.3.1/dist/list.min.js"></script>
   <style>
     body {
       font-family: 'Segoe UI', Arial, sans-serif;
@@ -31,9 +32,6 @@
       font-size: 13px;
       letter-spacing: 0.5px;
     }
-    tr:last-child td {
-      border-bottom: none;
-    }
     tr:hover {
       background-color: #f1f6fd;
     }
@@ -48,24 +46,44 @@
     .High { background-color: #e74c3c; }
     .Medium { background-color: #f39c12; }
     .Light { background-color: #27ae60; }
+    .search, select {
+      padding: 8px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      width: 100%;
+      box-sizing: border-box;
+    }
   </style>
 </head>
 <body>
-  <table>
-    <thead>
-      <tr>
-        <th>Jk</th>
-        <th>Link</th>
-        <th>Tüüp</th>
-        <th>Kirjeldus</th>
-        <th>Valdkond</th>
-        <th>Olulisus</th>
-      </tr>
-    </thead>
-    <tbody id="links">
-      <tr><td colspan="6">Laadin...</td></tr>
-    </tbody>
-  </table>
+  
+  <input class="search" placeholder="Otsi linke või kirjeldusi..." />
+
+  <select id="importanceFilter">
+    <option value="">Kõik olulisused</option>
+    <option value="High">High</option>
+    <option value="Medium">Medium</option>
+    <option value="Light">Light</option>
+  </select>
+
+  <div id="links">
+    <table>
+      <thead>
+        <tr>
+          <th>Jk</th>
+          <th>Link</th>
+          <th>Tüüp</th>
+          <th>Kirjeldus</th>
+          <th>Valdkond</th>
+          <th>Olulisus</th>
+        </tr>
+      </thead>
+      <tbody class="list">
+        <tr><td colspan="6">Laadin...</td></tr>
+      </tbody>
+    </table>
+  </div>
 
   <script>
     async function fetchCSV() {
@@ -79,28 +97,42 @@
       }).filter(link => link.jk && link.link);
     }
 
-    async function displayLinks() {
+    async function initList() {
       const links = await fetchCSV();
-      const container = document.getElementById('links');
-      container.innerHTML = '';
+      const tbody = document.querySelector('.list');
+      tbody.innerHTML = '';
 
       links.forEach(link => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td>${link.jk.trim()}</td>
-          <td><a href="${link.link.trim()}" target="_blank">${link.link.trim()}</a></td>
-          <td>${link.tyyp ? link.tyyp.trim() : ''}</td>
-          <td>${link.kirjeldus ? link.kirjeldus.trim() : ''}</td>
-          <td>${link.valdkond ? link.valdkond.trim() : ''}</td>
-          <td><span class="badge ${link.olulisus ? link.olulisus.trim() : 'Light'}">
+          <td class="jk">${link.jk.trim()}</td>
+          <td class="link"><a href="${link.link.trim()}" target="_blank">${link.link.trim()}</a></td>
+          <td class="tyyp">${link.tyyp ? link.tyyp.trim() : ''}</td>
+          <td class="kirjeldus">${link.kirjeldus ? link.kirjeldus.trim() : ''}</td>
+          <td class="valdkond">${link.valdkond ? link.valdkond.trim() : ''}</td>
+          <td class="olulisus"><span class="badge ${link.olulisus ? link.olulisus.trim() : 'Light'}">
             ${link.olulisus ? link.olulisus.trim() : 'Light'}
           </span></td>
         `;
-        container.appendChild(tr);
+        tbody.appendChild(tr);
+      });
+
+      const options = {
+        valueNames: ['jk', 'link', 'tyyp', 'kirjeldus', 'valdkond', { name: 'olulisus', attr: 'data-importance' }]
+      };
+
+      const linkList = new List('links', options);
+
+      document.getElementById('importanceFilter').addEventListener('change', function() {
+        const importance = this.value;
+        linkList.filter(item => {
+          if (importance === "") return true;
+          return item.values().olulisus.includes(importance);
+        });
       });
     }
 
-    displayLinks();
+    initList();
   </script>
 </body>
 </html>
