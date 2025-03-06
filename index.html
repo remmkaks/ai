@@ -148,20 +148,19 @@ tr:hover {
     tbody.innerHTML = '';
 
     links.forEach(link => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td class="jk">${link.jk.trim()}</td>
-        <td class="link"><a href="${link.link.trim()}" target="_blank">${link.link.trim()}</a></td>
-        <td class="tyyp">${link.tyyp.trim()}</td>
-        <td class="kirjeldus">${link.kirjeldus.trim()}</td>
-        <td class="valdkond">${link.valdkond.trim()}</td>
-        <td class="olulisus">
-          <span class="badge ${link.olulisus.trim()}">${link.olulisus.trim()}</span>
-        </td>
-      `;
-      tbody.appendChild(tr);
-    });
-
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td class="jk" data-label="Jk">${link.jk.trim()}</td>
+    <td class="link" data-label="Link"><a href="${link.link.trim()}" target="_blank">${link.link.trim()}</a></td>
+    <td class="tyyp" data-label="Tüüp">${link.tyyp.trim()}</td>
+    <td class="kirjeldus" data-label="Kirjeldus">${link.kirjeldus.trim()}</td>
+    <td class="valdkond" data-label="Valdkond">${link.valdkond.trim()}</td>
+    <td class="olulisus" data-label="Olulisus">
+      <span class="badge ${link.olulisus.trim()}">${link.olulisus.trim()}</span>
+    </td>
+  `;
+  tbody.appendChild(tr);
+});
     const options = {
       valueNames: ['jk', 'link', 'tyyp', 'kirjeldus', 'valdkond', 'olulisus']
     };
