@@ -5,28 +5,41 @@
   <title>Linkide kataloog</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      padding: 10px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 15px;
       margin: 0;
       background-color: transparent;
+      color: #333;
     }
     .link-item {
+      margin-bottom: 12px;
+      padding: 12px;
+      border-radius: 6px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      border-left: 5px solid #ccc;
       background-color: #fff;
-      margin-bottom: 10px;
-      padding: 10px;
-      border-radius: 5px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
     .link-item a {
-      color: #0066cc;
+      font-size: 16px;
       text-decoration: none;
-      font-weight: bold;
-      font-size: 15px;
+      color: #007bff;
+      font-weight: 600;
     }
-    .description {
+    .description, .type, .sector {
       font-size: 13px;
-      color: #555;
+      margin-top: 4px;
     }
+    .importance {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      margin-top: 5px;
+      color: #fff;
+    }
+    .importance.Light { background-color: #9ca3af; }
+    .importance.Medium { background-color: #f59e0b; }
+    .importance.High { background-color: #ef4444; }
   </style>
 </head>
 <body>
@@ -39,9 +52,9 @@
       const data = await response.text();
       const rows = data.split("\n").slice(1);
       return rows.map(row => {
-        const [pealkiri, kirjeldus, url] = row.split(",");
-        return { pealkiri, kirjeldus, url };
-      }).filter(link => link.pealkiri && link.url);
+        const [jk, link, tyyp, kirjeldus, valdkond, olulisus] = row.split(",");
+        return { jk, link, tyyp, kirjeldus, valdkond, olulisus };
+      }).filter(link => link.link);
     }
 
     async function displayLinks() {
@@ -52,9 +65,13 @@
       links.forEach(link => {
         const div = document.createElement('div');
         div.className = 'link-item';
+        div.style.borderLeftColor = link.olulisus.includes('High') ? '#ef4444' : link.olulisus.includes('Medium') ? '#f59e0b' : '#9ca3af';
         div.innerHTML = `
-          <a href="${link.url.trim()}" target="_blank">${link.pealkiri.trim()}</a>
-          <div class="description">${link.kirjeldus ? link.kirjeldus.trim() : ''}</div>
+          <a href="${link.link.trim()}" target="_blank">${link.jk.trim()}. ${link.link.trim()}</a>
+          <div class="description"><strong>Kirjeldus:</strong> ${link.kirjeldus ? link.kirjeldus.trim() : '–'}</div>
+          <div class="type"><strong>Tüüp:</strong> ${link.tyyp ? link.tyyp.trim() : '–'}</div>
+          <div class="sector"><strong>Valdkond:</strong> ${link.valdkond ? link.valdkond.trim() : '–'}</div>
+          <div class="importance ${link.olulisus ? link.olulisus.trim() : 'Light'}">${link.olulisus ? link.olulisus.trim() : 'Light'}</div>
         `;
         container.appendChild(div);
       });
