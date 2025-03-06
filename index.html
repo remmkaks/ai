@@ -1,14 +1,66 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html>
+<!DOCTYPE html>
+<html lang="et">
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <meta http-equiv="Content-Style-Type" content="text/css">
-  <title></title>
-  <meta name="Generator" content="Cocoa HTML Writer">
-  <meta name="CocoaVersion" content="2575.4">
-  <style type="text/css">
+  <meta charset="UTF-8">
+  <title>Linkide kataloog</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 10px;
+      margin: 0;
+      background-color: transparent;
+    }
+    .link-item {
+      background-color: #fff;
+      margin-bottom: 10px;
+      padding: 10px;
+      border-radius: 5px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .link-item a {
+      color: #0066cc;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 15px;
+    }
+    .description {
+      font-size: 13px;
+      color: #555;
+    }
   </style>
 </head>
 <body>
+  <div id="links">Laadimine...</div>
+
+  <script>
+    async function fetchCSV() {
+      const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQNo7nXc6z6G43Wk0lwJ12z4uj0SPRdv467Nks8vO3UbHdmfVlnx1_xaIgLUc6kbWyzCE8H8pOm-6_7/pub?output=csv';
+      const response = await fetch(csvUrl);
+      const data = await response.text();
+      const rows = data.split("\n").slice(1);
+      return rows.map(row => {
+        const [pealkiri, kirjeldus, url] = row.split(",");
+        return { pealkiri, kirjeldus, url };
+      }).filter(link => link.pealkiri && link.url);
+    }
+
+    async function displayLinks() {
+      const links = await fetchCSV();
+      const container = document.getElementById('links');
+      container.innerHTML = '';
+
+      links.forEach(link => {
+        const div = document.createElement('div');
+        div.className = 'link-item';
+        div.innerHTML = `
+          <a href="${link.url.trim()}" target="_blank">${link.pealkiri.trim()}</a>
+          <div class="description">${link.kirjeldus ? link.kirjeldus.trim() : ''}</div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    displayLinks();
+  </script>
 </body>
 </html>
