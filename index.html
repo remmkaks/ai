@@ -5,45 +5,67 @@
   <title>Linkide kataloog</title>
   <style>
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      padding: 15px;
+      font-family: 'Segoe UI', Arial, sans-serif;
       margin: 0;
-      background-color: transparent;
+      padding: 15px;
+      background-color: #f7f9fc;
       color: #333;
     }
-    .link-item {
-      margin-bottom: 12px;
-      padding: 12px;
-      border-radius: 6px;
+    table {
+      width: 100%;
+      border-collapse: collapse;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      border-left: 5px solid #ccc;
-      background-color: #fff;
+      border-radius: 6px;
+      overflow: hidden;
+      background: white;
     }
-    .link-item a {
-      font-size: 16px;
-      text-decoration: none;
-      color: #007bff;
-      font-weight: 600;
+    th, td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
     }
-    .description, .type, .sector {
+    th {
+      background-color: #2b3e50;
+      color: white;
+      text-transform: uppercase;
       font-size: 13px;
-      margin-top: 4px;
+      letter-spacing: 0.5px;
     }
-    .importance {
+    tr:last-child td {
+      border-bottom: none;
+    }
+    tr:hover {
+      background-color: #f1f6fd;
+    }
+    .badge {
       display: inline-block;
       padding: 3px 8px;
-      border-radius: 4px;
+      border-radius: 12px;
       font-size: 12px;
-      margin-top: 5px;
-      color: #fff;
+      color: white;
+      font-weight: bold;
     }
-    .importance.Light { background-color: #9ca3af; }
-    .importance.Medium { background-color: #f59e0b; }
-    .importance.High { background-color: #ef4444; }
+    .High { background-color: #e74c3c; }
+    .Medium { background-color: #f39c12; }
+    .Light { background-color: #27ae60; }
   </style>
 </head>
 <body>
-  <div id="links">Laadimine...</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Jk</th>
+        <th>Link</th>
+        <th>Tüüp</th>
+        <th>Kirjeldus</th>
+        <th>Valdkond</th>
+        <th>Olulisus</th>
+      </tr>
+    </thead>
+    <tbody id="links">
+      <tr><td colspan="6">Laadin...</td></tr>
+    </tbody>
+  </table>
 
   <script>
     async function fetchCSV() {
@@ -54,7 +76,7 @@
       return rows.map(row => {
         const [jk, link, tyyp, kirjeldus, valdkond, olulisus] = row.split(",");
         return { jk, link, tyyp, kirjeldus, valdkond, olulisus };
-      }).filter(link => link.link);
+      }).filter(link => link.jk && link.link);
     }
 
     async function displayLinks() {
@@ -63,17 +85,18 @@
       container.innerHTML = '';
 
       links.forEach(link => {
-        const div = document.createElement('div');
-        div.className = 'link-item';
-        div.style.borderLeftColor = link.olulisus.includes('High') ? '#ef4444' : link.olulisus.includes('Medium') ? '#f59e0b' : '#9ca3af';
-        div.innerHTML = `
-          <a href="${link.link.trim()}" target="_blank">${link.jk.trim()}. ${link.link.trim()}</a>
-          <div class="description"><strong>Kirjeldus:</strong> ${link.kirjeldus ? link.kirjeldus.trim() : '–'}</div>
-          <div class="type"><strong>Tüüp:</strong> ${link.tyyp ? link.tyyp.trim() : '–'}</div>
-          <div class="sector"><strong>Valdkond:</strong> ${link.valdkond ? link.valdkond.trim() : '–'}</div>
-          <div class="importance ${link.olulisus ? link.olulisus.trim() : 'Light'}">${link.olulisus ? link.olulisus.trim() : 'Light'}</div>
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${link.jk.trim()}</td>
+          <td><a href="${link.link.trim()}" target="_blank">${link.link.trim()}</a></td>
+          <td>${link.tyyp ? link.tyyp.trim() : ''}</td>
+          <td>${link.kirjeldus ? link.kirjeldus.trim() : ''}</td>
+          <td>${link.valdkond ? link.valdkond.trim() : ''}</td>
+          <td><span class="badge ${link.olulisus ? link.olulisus.trim() : 'Light'}">
+            ${link.olulisus ? link.olulisus.trim() : 'Light'}
+          </span></td>
         `;
-        container.appendChild(div);
+        container.appendChild(tr);
       });
     }
 
